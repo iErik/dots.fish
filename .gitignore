@@ -1,2 +1,5 @@
 .DS_Store
 /**/*/.DS_Store
+
+# Use conf.d/ instead
+config.fish
