@@ -10,6 +10,5 @@
       default = self.homeManagerModules.dots;
       dots = import ./nix/default.nix self;
     };
-
   };
 }
