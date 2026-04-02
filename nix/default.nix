@@ -44,6 +44,8 @@ in {
   config = mkIf cfg.enable {
     home.packages = [ pkgs.oh-my-fish ];
 
+    programs.fish.enable = true;
+
     home.activation.fishSetup = mkIf cfg.cloneConfig
       (entryAfter ["writeBoundary"] ''
         export PATH=${pkgs.openssh}/bin:$PATH
