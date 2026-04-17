@@ -25,10 +25,10 @@ function hms -d 'Recreates the user profile configuration'
 end
 
 function nix-rebuild -d 'Creates the operating system from a config file'
-  sudo nixos-rebuild switch --flake "$HOME/Nix#Eminence"
+  sudo nixos-rebuild switch --flake "$HOME/Nix#"
 end
 
 function sys-rebuild -d 'Rebuilds HomeManager and NixOS\'s config'
-  sudo nixos-rebuild switch --flake "$HOME/Nix#Eminence"
+  sudo nixos-rebuild switch --flake "$HOME/Nix#"
   and home-manager switch -b backup --flake "$HOME/Nix#$USER"
 end
