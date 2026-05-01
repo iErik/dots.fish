@@ -1,4 +1,3 @@
-
 fish_add_path $HOME/.spicetify
 fish_add_path $HOME/.config/rofi/scripts
 fish_add_path $HOME/.cargo/bin
