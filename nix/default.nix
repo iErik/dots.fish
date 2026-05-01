@@ -1,7 +1,7 @@
 self: { pkgs, lib, config, ... }: let
 
   inherit (lib) mkOption mkIf types;
-  inherit (lib.hm.dag) entryAfter;
+  inherit (lib.hm.dag) entryBefore;
   inherit (config.home) username homeDirectory;
 
   cfg = config.dots.fish;
@@ -9,6 +9,9 @@ self: { pkgs, lib, config, ... }: let
   xdgConfDir = "${homeDirectory}/.config/fish";
   repoUrl = "git@github.com:iErik/dots.fish.git";
 
+  setupNames = builtins.attrNames (lib.filterAttrs
+    (n: v: v == "directory")
+    (builtins.readDir ../setups));
 in {
   options.dots.fish = {
     enable = mkOption {
@@ -39,6 +42,18 @@ in {
       default = "master";
       description = "Git branch to clone";
     };
+
+    setup = mkOption {
+      type = types.nullOr (types.enum setupNames);
+      default = null;
+      description =
+        "Which per-machine setup directory from " +
+        "setups/ to source alongside the main config. " +
+        "Value must match a subdirectory name in " +
+        "setups/. All *.fish files inside the chosen " +
+        "directory are sourced after conf.d/. Set to " +
+        "null to not include any.";
+    };
   };
 
   config = mkIf cfg.enable {
@@ -47,7 +62,7 @@ in {
     programs.fish.enable = true;
 
     home.activation.fishSetup = mkIf cfg.cloneConfig
-      (entryAfter ["writeBoundary"] ''
+      (entryBefore ["checkLinkTargets"] ''
         export PATH=${pkgs.openssh}/bin:$PATH
         export PATH=${pkgs.git}/bin:$PATH
 
@@ -69,6 +84,18 @@ in {
 
           ln -s ${dotsDir} ${xdgConfDir}
         fi
+
+        rm -f ${dotsDir}/conf.d/99-setup.fish
+        ${lib.optionalString (cfg.setup != null) ''
+          cat > ${dotsDir}/conf.d/99-setup.fish <<'EOF'
+          set -l setup_dir $__fish_config_dir/setups/${cfg.setup}
+          if test -d $setup_dir
+              for f in (find $setup_dir -maxdepth 1 -type f -name '*.fish' | sort)
+                  source $f
+              end
+          end
+          EOF
+        ''}
 
         ssh-agent -k
       '');
